@@ -1,0 +1,29 @@
+.sidebar {
+  padding: 16px;
+  background-color: #fbfafa;
+  border-radius: 20px;
+  height: 90vh;
+  .menu {
+    text-align: left;
+    font-size: 40px;
+    font-weight: bold;
+  }
+  .search-field {
+    margin-bottom: 16px;
+  }
+
+  .list-header {
+    text-align: left;
+    font-weight: bold;
+    margin-top: 16px;
+    margin-bottom: 8px;
+  }
+
+  .category-list {
+    margin-bottom: 16px;
+  }
+
+  .add-category-btn {
+    margin-top: 16px;
+  }
+}

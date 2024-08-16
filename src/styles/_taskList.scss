@@ -1,0 +1,23 @@
+.task-list {
+  .task-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 0;
+
+    .task-checkbox {
+      margin-right: 8px;
+    }
+
+    .task-title {
+      flex-grow: 1;
+    }
+
+    .task-actions {
+      display: flex;
+    }
+  }
+
+  .add-task-btn {
+    margin-top: 16px;
+  }
+}
