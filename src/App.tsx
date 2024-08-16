@@ -35,10 +35,10 @@ const App: React.FC = () => {
     );
   };
 
-  const addCategory = (name: string) => {
+  const addCategory = (name: string, color: string) => {
     setCategories([
       ...categories,
-      { id: Date.now().toString(), name, taskCount: 0 },
+      { id: Date.now().toString(), name, taskCount: 0, color },
     ]);
   };
 

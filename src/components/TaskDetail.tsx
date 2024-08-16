@@ -76,8 +76,19 @@ const TaskDetail = ({
       />
       <TextField
         className="form-field"
-        select
         fullWidth
+        label="Due Date"
+        name="dueDate"
+        type="date"
+        value={task.dueDate}
+        onChange={handleChange}
+        margin="normal"
+        InputLabelProps={{ shrink: true }}
+      />
+      <TextField
+        className="form-field"
+        fullWidth
+        select
         label="List"
         name="list"
         value={task.list}
@@ -90,18 +101,6 @@ const TaskDetail = ({
           </MenuItem>
         ))}
       </TextField>
-      <TextField
-        className="form-field"
-        fullWidth
-        label="Due Date"
-        name="dueDate"
-        type="date"
-        value={task.dueDate}
-        onChange={handleChange}
-        margin="normal"
-        InputLabelProps={{ shrink: true }}
-      />
-
       <Box className="action-buttons">
         <Button className="submit-btn" type="submit" variant="contained">
           {(task.id = "Update")}
