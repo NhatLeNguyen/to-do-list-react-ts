@@ -4,10 +4,12 @@ import {
   ListItemText,
   Checkbox,
   IconButton,
-  Button,
+  Typography,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
+import AddIcon from "@mui/icons-material/Add";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { Task } from "../types";
 import "./_taskList.scss";
 
@@ -16,6 +18,7 @@ interface TaskListProps {
   toggleTaskCompletion: (id: string) => void;
   deleteTask: (id: string) => void;
   setSelectedTask: (task: Task) => void;
+  addNewTask: () => void;
 }
 
 const TaskList = ({
@@ -23,49 +26,55 @@ const TaskList = ({
   toggleTaskCompletion,
   deleteTask,
   setSelectedTask,
+  addNewTask,
 }: TaskListProps) => {
   return (
     <div className="task-list">
-      <Button
-        className="add-task-btn"
-        variant="contained"
-        color="primary"
-        fullWidth
-        onClick={() =>
-          setSelectedTask({
-            id: "",
-            title: "",
-            description: "",
-            dueDate: "",
-            list: "",
-            completed: false,
-          })
-        }
-      >
-        Add New Task
-      </Button>
+      <Typography variant="h4" className="task-list-header">
+        Today <span className="task-count">{tasks.length}</span>
+      </Typography>
+      <ListItem button onClick={addNewTask} className="add-task-item">
+        <AddIcon className="add-icon" />
+        <ListItemText primary="Add New Task" />
+      </ListItem>
       <List>
         {tasks.map((task) => (
-          <ListItem key={task.id} className="task-item">
+          <ListItem
+            key={task.id}
+            button
+            onClick={() => setSelectedTask(task)}
+            className="task-item"
+          >
             <Checkbox
               className="task-checkbox"
               checked={task.completed}
               onChange={() => toggleTaskCompletion(task.id)}
+              onClick={(e) => e.stopPropagation()}
             />
             <ListItemText className="task-title" primary={task.title} />
             <div className="task-actions">
-              <IconButton onClick={() => setSelectedTask(task)}>
+              <IconButton
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedTask(task);
+                }}
+              >
                 <EditIcon />
               </IconButton>
-              <IconButton onClick={() => deleteTask(task.id)}>
+              <IconButton
+                onClick={(e) => {
+                  e.stopPropagation();
+                  deleteTask(task.id);
+                }}
+              >
                 <DeleteIcon />
               </IconButton>
             </div>
+            <ChevronRightIcon />
           </ListItem>
         ))}
       </List>
     </div>
   );
 };
-
 export default TaskList;

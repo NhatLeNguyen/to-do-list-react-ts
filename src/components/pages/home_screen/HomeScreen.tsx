@@ -1,13 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Grid, ThemeProvider, createTheme } from "@mui/material";
-import {
-  collection,
-  getDocs,
-  addDoc,
-  updateDoc,
-  deleteDoc,
-  doc,
-} from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../firebase";
 import Sidebar from "./sidebar/Sidebar";
 import TaskList from "./task-list/TaskList";
@@ -44,33 +37,53 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout }) => {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
-  const addTask = async (task: Task) => {
-    const docRef = await addDoc(collection(db, "tasks"), task);
-    setTasks([{ ...task, id: docRef.id }, ...tasks]);
+  // const addTask = async (task: Task) => {
+  //   const docRef = await addDoc(collection(db, "tasks"), task);
+  //   setTasks([{ ...task, id: docRef.id }, ...tasks]);
+  // };
+
+  // const updateTask = async (updatedTask: Task) => {
+  //   const taskDoc = doc(db, "tasks", updatedTask.id);
+  //   await updateDoc(taskDoc, updatedTask);
+  //   setTasks(
+  //     tasks.map((task) => (task.id === updatedTask.id ? updatedTask : task))
+  //   );
+  // };
+
+  // const deleteTask = async (id: string) => {
+  //   const taskDoc = doc(db, "tasks", id);
+  //   await deleteDoc(taskDoc);
+  //   setTasks(tasks.filter((task) => task.id !== id));
+  // };
+
+  // const toggleTaskCompletion = async (id: string) => {
+  //   const task = tasks.find((task) => task.id === id);
+  //   if (task) {
+  //     const updatedTask = { ...task, completed: !task.completed };
+  //     await updateTask(updatedTask);
+  //   }
+  // };
+  const addTask = (newTask: Task) => {
+    setTasks([...tasks, { ...newTask, id: Date.now().toString() }]);
   };
 
-  const updateTask = async (updatedTask: Task) => {
-    const taskDoc = doc(db, "tasks", updatedTask.id);
-    await updateDoc(taskDoc, updatedTask);
+  const updateTask = (updatedTask: Task) => {
     setTasks(
       tasks.map((task) => (task.id === updatedTask.id ? updatedTask : task))
     );
   };
 
-  const deleteTask = async (id: string) => {
-    const taskDoc = doc(db, "tasks", id);
-    await deleteDoc(taskDoc);
+  const deleteTask = (id: string) => {
     setTasks(tasks.filter((task) => task.id !== id));
   };
 
-  const toggleTaskCompletion = async (id: string) => {
-    const task = tasks.find((task) => task.id === id);
-    if (task) {
-      const updatedTask = { ...task, completed: !task.completed };
-      await updateTask(updatedTask);
-    }
+  const toggleTaskCompletion = (id: string) => {
+    setTasks(
+      tasks.map((task) =>
+        task.id === id ? { ...task, completed: !task.completed } : task
+      )
+    );
   };
-
   const addCategory = (name: string, color: string) => {
     setCategories([
       ...categories,
@@ -97,6 +110,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout }) => {
               toggleTaskCompletion={toggleTaskCompletion}
               deleteTask={deleteTask}
               setSelectedTask={setSelectedTask}
+              addNewTask={() => {}}
             />
           </Grid>
           <Grid item xs={4}>

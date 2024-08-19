@@ -11,7 +11,6 @@ interface TaskDetailProps {
   setSelectedTask: (task: Task | null) => void;
   deleteTask: (id: string) => void;
 }
-
 const TaskDetail = ({
   selectedTask,
   categories,
@@ -48,7 +47,15 @@ const TaskDetail = ({
       } else {
         addTask(task);
       }
-      setSelectedTask(null);
+      setSelectedTask(task);
+      setTask({
+        id: "",
+        title: "",
+        description: "",
+        dueDate: "",
+        list: "",
+        completed: false,
+      });
     }
   };
 
