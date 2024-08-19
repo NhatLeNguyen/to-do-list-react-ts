@@ -31,3 +31,6 @@ const db = getFirestore(app);
 export const auth = getAuth(app);
 export default app;
 export { db };
+
+// keke@gmail.com
+// Abc123!@#

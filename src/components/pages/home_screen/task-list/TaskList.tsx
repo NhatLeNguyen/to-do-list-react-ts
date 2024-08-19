@@ -1,3 +1,4 @@
+import React from "react";
 import {
   List,
   ListItem,
@@ -9,49 +10,64 @@ import {
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import AddIcon from "@mui/icons-material/Add";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import { Task } from "../types";
+import { Task, Category } from "../types";
 import "./_taskList.scss";
 
 interface TaskListProps {
   tasks: Task[];
+  categories: Category[];
   toggleTaskCompletion: (id: string) => void;
   deleteTask: (id: string) => void;
   setSelectedTask: (task: Task) => void;
   addNewTask: () => void;
+  selectedCategory: string | null;
+  setSelectedCategory: (categoryId: string | null) => void;
 }
 
 const TaskList = ({
   tasks,
+  categories,
   toggleTaskCompletion,
   deleteTask,
   setSelectedTask,
   addNewTask,
+  selectedCategory,
 }: TaskListProps) => {
+  const filteredTasks = selectedCategory
+    ? tasks.filter((task) => task.list === selectedCategory)
+    : tasks;
+
   return (
     <div className="task-list">
       <Typography variant="h4" className="task-list-header">
-        Today <span className="task-count">{tasks.length}</span>
+        Todo - List
       </Typography>
+
       <ListItem button onClick={addNewTask} className="add-task-item">
         <AddIcon className="add-icon" />
         <ListItemText primary="Add New Task" />
       </ListItem>
       <List>
-        {tasks.map((task) => (
-          <ListItem
-            key={task.id}
-            button
-            onClick={() => setSelectedTask(task)}
-            className="task-item"
-          >
+        {filteredTasks.map((task) => (
+          <ListItem key={task.id} button className="task-item">
             <Checkbox
               className="task-checkbox"
               checked={task.completed}
               onChange={() => toggleTaskCompletion(task.id)}
               onClick={(e) => e.stopPropagation()}
             />
-            <ListItemText className="task-title" primary={task.title} />
+            <ListItemText
+              className="task-title"
+              primary={task.title}
+              secondary={task.dueDate}
+            />
+            <div
+              className="list-color-indicator"
+              style={{
+                backgroundColor: categories.find((c) => c.id === task.list)
+                  ?.color,
+              }}
+            />
             <div className="task-actions">
               <IconButton
                 onClick={(e) => {
@@ -70,11 +86,11 @@ const TaskList = ({
                 <DeleteIcon />
               </IconButton>
             </div>
-            <ChevronRightIcon />
           </ListItem>
         ))}
       </List>
     </div>
   );
 };
+
 export default TaskList;

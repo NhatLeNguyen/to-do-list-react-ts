@@ -3,6 +3,11 @@
   background-color: #f5f5f5;
   border-radius: 20px;
   height: 90vh;
+  animation: slide-in 0.3s ease-out;
+  .task-detail-header {
+    font-size: 24px;
+    font-weight: bold;
+  }
   .form-field {
     margin-bottom: 16px;
   }
@@ -12,8 +17,19 @@
     justify-content: flex-start;
     margin-top: 24px;
 
-    .submit-btn {
+    .submit-btn,
+    .delete-btn {
       margin-right: 16px;
     }
+  }
+}
+@keyframes slide-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
   }
 }

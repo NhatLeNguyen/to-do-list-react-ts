@@ -11,7 +11,7 @@ import {
   InputAdornment,
   IconButton,
 } from "@mui/material";
-import { Category } from "../types";
+import { Category, Task } from "../types";
 import UpcomingIcon from "@mui/icons-material/Upcoming";
 import TodayIcon from "@mui/icons-material/Today";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
@@ -21,22 +21,32 @@ import SearchIcon from "@mui/icons-material/Search";
 import MenuIcon from "@mui/icons-material/Menu";
 import SettingsIcon from "@mui/icons-material/Settings";
 import LogoutIcon from "@mui/icons-material/Logout";
+import DeleteIcon from "@mui/icons-material/Delete";
+
 import "./_sideBar.scss";
 
 interface SidebarProps {
   categories: Category[];
   addCategory: (name: string, color: string) => void;
+  deleteCategory: (categoryId: string) => void; // Add deleteCategory prop
   isOpen: boolean;
   toggleSidebar: () => void;
   onLogout: () => void;
+  setSelectedCategory: (categoryId: string | null) => void;
+  selectedCategory: string | null;
+  tasks: Task[];
 }
 
 const Sidebar = ({
   categories,
   addCategory,
+  deleteCategory,
   isOpen,
   toggleSidebar,
   onLogout,
+  setSelectedCategory,
+  selectedCategory,
+  tasks,
 }: SidebarProps) => {
   const [newListName, setNewListName] = useState("");
   const [selectedColor, setSelectedColor] = useState("#1976d2");
@@ -122,8 +132,33 @@ const Sidebar = ({
           LISTS
         </Typography>
         <List className="category-list">
+          <ListItem
+            button
+            onClick={() => setSelectedCategory(null)}
+            selected={selectedCategory === null}
+          >
+            <ListItemIcon>
+              <FiberManualRecordIcon
+                style={{
+                  color: "gray",
+                  width: "30px",
+                  height: "30px",
+                }}
+              />
+            </ListItemIcon>
+            <ListItemText
+              className="list-item-text"
+              primary="All"
+              secondary={tasks.length}
+            />
+          </ListItem>
           {categories.map((category) => (
-            <ListItem button key={category.id}>
+            <ListItem
+              button
+              key={category.id}
+              onClick={() => setSelectedCategory(category.id)}
+              selected={selectedCategory === category.id}
+            >
               <ListItemIcon>
                 <FiberManualRecordIcon
                   style={{
@@ -137,7 +172,14 @@ const Sidebar = ({
                 className="list-item-text"
                 primary={category.name}
                 secondary={category.taskCount}
-              />
+              />{" "}
+              <IconButton
+                edge="end"
+                aria-label="delete"
+                onClick={() => deleteCategory(category.id)}
+              >
+                <DeleteIcon />
+              </IconButton>
             </ListItem>
           ))}
         </List>

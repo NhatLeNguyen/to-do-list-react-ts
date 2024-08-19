@@ -19,6 +19,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout }) => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [isTaskDetailVisible, setIsTaskDetailVisible] = useState(false);
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -33,36 +35,22 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout }) => {
     fetchTasks();
   }, []);
 
+  const updateCategoryCounts = () => {
+    const newCategories = categories.map((category) => ({
+      ...category,
+      taskCount: tasks.filter((task) => task.list === category.id).length,
+    }));
+    setCategories(newCategories);
+  };
+
+  useEffect(() => {
+    updateCategoryCounts();
+  }, [tasks]);
+
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
-  // const addTask = async (task: Task) => {
-  //   const docRef = await addDoc(collection(db, "tasks"), task);
-  //   setTasks([{ ...task, id: docRef.id }, ...tasks]);
-  // };
-
-  // const updateTask = async (updatedTask: Task) => {
-  //   const taskDoc = doc(db, "tasks", updatedTask.id);
-  //   await updateDoc(taskDoc, updatedTask);
-  //   setTasks(
-  //     tasks.map((task) => (task.id === updatedTask.id ? updatedTask : task))
-  //   );
-  // };
-
-  // const deleteTask = async (id: string) => {
-  //   const taskDoc = doc(db, "tasks", id);
-  //   await deleteDoc(taskDoc);
-  //   setTasks(tasks.filter((task) => task.id !== id));
-  // };
-
-  // const toggleTaskCompletion = async (id: string) => {
-  //   const task = tasks.find((task) => task.id === id);
-  //   if (task) {
-  //     const updatedTask = { ...task, completed: !task.completed };
-  //     await updateTask(updatedTask);
-  //   }
-  // };
   const addTask = (newTask: Task) => {
     setTasks([...tasks, { ...newTask, id: Date.now().toString() }]);
   };
@@ -84,11 +72,30 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout }) => {
       )
     );
   };
+
   const addCategory = (name: string, color: string) => {
     setCategories([
       ...categories,
       { id: Date.now().toString(), name, taskCount: 0, color },
     ]);
+  };
+
+  const deleteCategory = (categoryId: string) => {
+    setCategories(categories.filter((category) => category.id !== categoryId));
+  };
+
+  const handleAddNewTask = () => {
+    setSelectedTask(null);
+    setIsTaskDetailVisible(true);
+  };
+
+  const handleEditTask = (task: Task) => {
+    setSelectedTask(task);
+    setIsTaskDetailVisible(true);
+  };
+
+  const handleCloseTaskDetail = () => {
+    setIsTaskDetailVisible(false);
   };
 
   return (
@@ -99,29 +106,39 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout }) => {
             <Sidebar
               categories={categories}
               addCategory={addCategory}
+              deleteCategory={deleteCategory}
               isOpen={isSidebarOpen}
               toggleSidebar={toggleSidebar}
               onLogout={onLogout}
+              setSelectedCategory={setSelectedCategory}
+              selectedCategory={selectedCategory}
+              tasks={tasks}
             />
           </Grid>
           <Grid item xs={5}>
             <TaskList
               tasks={tasks}
+              categories={categories}
               toggleTaskCompletion={toggleTaskCompletion}
               deleteTask={deleteTask}
-              setSelectedTask={setSelectedTask}
-              addNewTask={() => {}}
+              setSelectedTask={handleEditTask}
+              addNewTask={handleAddNewTask}
+              selectedCategory={selectedCategory}
+              setSelectedCategory={setSelectedCategory}
             />
           </Grid>
           <Grid item xs={4}>
-            <TaskDetail
-              selectedTask={selectedTask}
-              categories={categories}
-              updateTask={updateTask}
-              addTask={addTask}
-              setSelectedTask={setSelectedTask}
-              deleteTask={deleteTask}
-            />
+            {isTaskDetailVisible && (
+              <TaskDetail
+                selectedTask={selectedTask}
+                categories={categories}
+                updateTask={updateTask}
+                addTask={addTask}
+                setSelectedTask={setSelectedTask}
+                deleteTask={deleteTask}
+                closeTaskDetail={handleCloseTaskDetail}
+              />
+            )}
           </Grid>
         </Grid>
       </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { TextField, Button, Box, MenuItem } from "@mui/material";
+import { TextField, Button, Box, MenuItem, Typography } from "@mui/material";
 import { Task, Category } from "../types";
 import "./_taskDetail.scss";
 
@@ -10,7 +10,9 @@ interface TaskDetailProps {
   addTask: (task: Task) => void;
   setSelectedTask: (task: Task | null) => void;
   deleteTask: (id: string) => void;
+  closeTaskDetail: () => void;
 }
+
 const TaskDetail = ({
   selectedTask,
   categories,
@@ -18,6 +20,7 @@ const TaskDetail = ({
   addTask,
   setSelectedTask,
   deleteTask,
+  closeTaskDetail,
 }: TaskDetailProps) => {
   const [task, setTask] = useState<Task | null>(selectedTask);
 
@@ -56,6 +59,7 @@ const TaskDetail = ({
         list: "",
         completed: false,
       });
+      closeTaskDetail();
     }
   };
 
@@ -63,6 +67,7 @@ const TaskDetail = ({
     if (task && task.id) {
       deleteTask(task.id);
       setSelectedTask(null);
+      closeTaskDetail();
     }
   };
 
@@ -70,6 +75,9 @@ const TaskDetail = ({
 
   return (
     <Box component="form" onSubmit={handleSubmit} className="task-detail">
+      <Typography variant="h6" className="task-detail-header">
+        Task:
+      </Typography>
       <TextField
         className="form-field"
         fullWidth
@@ -123,13 +131,20 @@ const TaskDetail = ({
         </Button>
         {task.id && (
           <Button
-            variant="outlined"
             className="delete-btn"
+            variant="outlined"
             onClick={handleDelete}
           >
             Delete
           </Button>
         )}
+        <Button
+          variant="outlined"
+          className="close-btn"
+          onClick={closeTaskDetail}
+        >
+          Close
+        </Button>
       </Box>
     </Box>
   );
