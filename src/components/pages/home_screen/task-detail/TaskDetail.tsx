@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { TextField, Button, Box, MenuItem } from "@mui/material";
-import { Task, Category } from "./types";
-import "../styles/_taskDetail.scss";
+import { Task, Category } from "../types";
+import "./_taskDetail.scss";
 
 interface TaskDetailProps {
   selectedTask: Task | null;
@@ -9,6 +9,7 @@ interface TaskDetailProps {
   updateTask: (task: Task) => void;
   addTask: (task: Task) => void;
   setSelectedTask: (task: Task | null) => void;
+  deleteTask: (id: string) => void;
 }
 
 const TaskDetail = ({
@@ -17,6 +18,7 @@ const TaskDetail = ({
   updateTask,
   addTask,
   setSelectedTask,
+  deleteTask,
 }: TaskDetailProps) => {
   const [task, setTask] = useState<Task | null>(selectedTask);
 
@@ -46,6 +48,13 @@ const TaskDetail = ({
       } else {
         addTask(task);
       }
+      setSelectedTask(null);
+    }
+  };
+
+  const handleDelete = () => {
+    if (task && task.id) {
+      deleteTask(task.id);
       setSelectedTask(null);
     }
   };
@@ -103,11 +112,17 @@ const TaskDetail = ({
       </TextField>
       <Box className="action-buttons">
         <Button className="submit-btn" type="submit" variant="contained">
-          {(task.id = "Update")}
+          {task.id ? "Update" : "Add"}
         </Button>
-        <Button variant="outlined" className="submit-btn" type="submit">
-          {(task.id = "Delete")}
-        </Button>
+        {task.id && (
+          <Button
+            variant="outlined"
+            className="delete-btn"
+            onClick={handleDelete}
+          >
+            Delete
+          </Button>
+        )}
       </Box>
     </Box>
   );

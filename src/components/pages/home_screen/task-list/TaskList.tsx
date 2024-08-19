@@ -1,4 +1,3 @@
-import React from "react";
 import {
   List,
   ListItem,
@@ -9,8 +8,8 @@ import {
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
-import { Task } from "./types";
-import "../styles/_taskList.scss";
+import { Task } from "../types";
+import "./_taskList.scss";
 
 interface TaskListProps {
   tasks: Task[];
@@ -27,6 +26,24 @@ const TaskList = ({
 }: TaskListProps) => {
   return (
     <div className="task-list">
+      <Button
+        className="add-task-btn"
+        variant="contained"
+        color="primary"
+        fullWidth
+        onClick={() =>
+          setSelectedTask({
+            id: "",
+            title: "",
+            description: "",
+            dueDate: "",
+            list: "",
+            completed: false,
+          })
+        }
+      >
+        Add New Task
+      </Button>
       <List>
         {tasks.map((task) => (
           <ListItem key={task.id} className="task-item">
@@ -47,24 +64,6 @@ const TaskList = ({
           </ListItem>
         ))}
       </List>
-      <Button
-        className="add-task-btn"
-        variant="contained"
-        color="primary"
-        fullWidth
-        onClick={() =>
-          setSelectedTask({
-            id: "",
-            title: "",
-            description: "",
-            dueDate: "",
-            list: "",
-            completed: false,
-          })
-        }
-      >
-        Add New Task
-      </Button>
     </div>
   );
 };
