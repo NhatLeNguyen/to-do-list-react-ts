@@ -28,13 +28,14 @@ import "./_sideBar.scss";
 interface SidebarProps {
   categories: Category[];
   addCategory: (name: string, color: string) => void;
-  deleteCategory: (categoryId: string) => void; // Add deleteCategory prop
+  deleteCategory: (categoryId: string) => void;
   isOpen: boolean;
   toggleSidebar: () => void;
   onLogout: () => void;
   setSelectedCategory: (categoryId: string | null) => void;
   selectedCategory: string | null;
   tasks: Task[];
+  onSettingsClick: () => void;
 }
 
 const Sidebar = ({
@@ -47,6 +48,7 @@ const Sidebar = ({
   setSelectedCategory,
   selectedCategory,
   tasks,
+  onSettingsClick,
 }: SidebarProps) => {
   const [newListName, setNewListName] = useState("");
   const [selectedColor, setSelectedColor] = useState("#1976d2");
@@ -230,7 +232,7 @@ const Sidebar = ({
       </div>
 
       <List className="bottom-list">
-        <ListItem button>
+        <ListItem button onClick={onSettingsClick}>
           <ListItemIcon>
             <SettingsIcon />
           </ListItemIcon>

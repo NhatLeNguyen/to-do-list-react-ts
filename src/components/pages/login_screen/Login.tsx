@@ -56,7 +56,6 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           password
         );
         const token = await userCredential.user.getIdToken();
-        console.log(token);
 
         onLogin(token);
         alert("Login successful!");

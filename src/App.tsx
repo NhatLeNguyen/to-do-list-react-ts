@@ -8,22 +8,36 @@ import {
 import Login from "./components/pages/login_screen/Login";
 import Signup from "./components/pages/signup_screen/Signup";
 import HomeScreen from "./components/pages/home_screen/HomeScreen";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "./components/firebase";
 
 const App: React.FC = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    const token = sessionStorage.getItem("authToken");
+    return token ? true : false;
+  });
 
   useEffect(() => {
-    const token = localStorage.getItem("authToken");
-    setIsAuthenticated(!!token);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setIsAuthenticated(true);
+      } else {
+        sessionStorage.removeItem("authToken");
+        setIsAuthenticated(false);
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
 
   const handleLogin = (token: string) => {
-    localStorage.setItem("authToken", token);
+    sessionStorage.setItem("authToken", token);
     setIsAuthenticated(true);
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("authToken");
+    sessionStorage.removeItem("authToken");
+    auth.signOut();
     setIsAuthenticated(false);
   };
 
@@ -42,7 +56,10 @@ const App: React.FC = () => {
             )
           }
         />
-        <Route path="*" element={<Navigate to="/login" />} />
+        <Route
+          path="*"
+          element={<Navigate to={isAuthenticated ? "/home" : "/login"} />}
+        />
       </Routes>
     </Router>
   );

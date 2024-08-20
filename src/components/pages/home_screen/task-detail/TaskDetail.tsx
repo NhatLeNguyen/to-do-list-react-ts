@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { TextField, Button, Box, MenuItem, Typography } from "@mui/material";
+import {
+  TextField,
+  Button,
+  Box,
+  MenuItem,
+  Typography,
+  IconButton,
+} from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 import { Task, Category } from "../types";
 import "./_taskDetail.scss";
 
@@ -75,9 +83,14 @@ const TaskDetail = ({
 
   return (
     <Box component="form" onSubmit={handleSubmit} className="task-detail">
-      <Typography variant="h6" className="task-detail-header">
-        Task:
-      </Typography>
+      <Box className="task-detail-header">
+        <Typography className="task-detail-title" variant="h6">
+          Task
+        </Typography>
+        <IconButton className="close-icon" onClick={closeTaskDetail}>
+          <CloseIcon />
+        </IconButton>
+      </Box>
       <TextField
         className="form-field"
         fullWidth
@@ -138,13 +151,6 @@ const TaskDetail = ({
             Delete
           </Button>
         )}
-        <Button
-          variant="outlined"
-          className="close-btn"
-          onClick={closeTaskDetail}
-        >
-          Close
-        </Button>
       </Box>
     </Box>
   );

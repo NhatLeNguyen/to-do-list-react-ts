@@ -3,77 +3,58 @@ import { useNavigate } from "react-router-dom";
 import { VALIDATIONS } from "../../constants";
 import "./_signup.scss";
 
-//authen
+//firebase
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../../firebase";
+import { db, auth } from "../../firebase";
+import { doc, setDoc } from "firebase/firestore";
 
 const Signup: React.FC = () => {
-  const [name, setName] = useState<string>("");
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [confirmPassword, setConfirmPassword] = useState<string>("");
-  const [agree, setAgree] = useState<boolean>(false);
-  const [nameError, setNameError] = useState<string>("");
-  const [emailError, setEmailError] = useState<string>("");
-  const [passwordError, setPasswordError] = useState<string>("");
-  const [confirmPasswordError, setConfirmPasswordError] = useState<string>("");
-  const [agreeError, setAgreeError] = useState<string>("");
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    agree: false,
+  });
+
+  const [formErrors, setFormErrors] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    agree: "",
+  });
+
   const navigate = useNavigate();
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value, checked, type } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [id]: type === "checkbox" ? checked : value,
+    }));
+  };
 
   const validateRegister = (): boolean => {
     let isValid = true;
+    const errors: Record<string, string> = {};
 
-    const registerValidations = VALIDATIONS.filter(
-      (validation) =>
-        validation.id === "name" ||
-        validation.id === "email" ||
-        validation.id === "password" ||
-        validation.id === "confirmPassword" ||
-        validation.id === "agree"
-    );
-
-    registerValidations.forEach((field) => {
-      const element = document.getElementById(field.id) as HTMLInputElement;
-      const errorMessage = field.validate(element.value);
-
-      if (errorMessage !== "") {
-        isValid = false;
-        if (field.id === "name") {
-          setNameError(
-            Array.isArray(errorMessage) ? errorMessage.join(", ") : errorMessage
-          );
-        } else if (field.id === "email") {
-          setEmailError(
-            Array.isArray(errorMessage) ? errorMessage.join(", ") : errorMessage
-          );
-        } else if (field.id === "password") {
-          setPasswordError(
-            Array.isArray(errorMessage) ? errorMessage.join(", ") : errorMessage
-          );
-        } else if (field.id === "confirmPassword") {
-          setConfirmPasswordError(
-            Array.isArray(errorMessage) ? errorMessage.join(", ") : errorMessage
-          );
-        } else if (field.id === "agree") {
-          setAgreeError(
-            Array.isArray(errorMessage) ? errorMessage.join(", ") : errorMessage
-          );
-        }
-      } else {
-        if (field.id === "name") {
-          setNameError("");
-        } else if (field.id === "email") {
-          setEmailError("");
-        } else if (field.id === "password") {
-          setPasswordError("");
-        } else if (field.id === "confirmPassword") {
-          setConfirmPasswordError("");
-        } else if (field.id === "agree") {
-          setAgreeError("");
+    VALIDATIONS.forEach((field) => {
+      if (field.id in formData) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const errorMessage = field.validate((formData as any)[field.id]);
+        if (errorMessage) {
+          isValid = false;
+          errors[field.id] = Array.isArray(errorMessage)
+            ? errorMessage.join(", ")
+            : errorMessage;
+        } else {
+          errors[field.id] = "";
         }
       }
     });
 
+    setFormErrors(errors);
     return isValid;
   };
 
@@ -81,7 +62,21 @@ const Signup: React.FC = () => {
     event.preventDefault();
     if (validateRegister()) {
       try {
-        await createUserWithEmailAndPassword(auth, email, password);
+        const userCredential = await createUserWithEmailAndPassword(
+          auth,
+          formData.email,
+          formData.password
+        );
+        const user = userCredential.user;
+
+        // Save user information to Firestore
+        await setDoc(doc(db, "users", user.uid), {
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          createdAt: new Date(),
+        });
+
         alert("Create account successfully!");
         navigate("/login");
       } catch (error) {
@@ -100,10 +95,12 @@ const Signup: React.FC = () => {
           type="text"
           id="name"
           placeholder="Enter your name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+          value={formData.name}
+          onChange={handleChange}
         />
-        {nameError && <div className="error-message">{nameError}</div>}
+        {formErrors.name && (
+          <div className="error-message">{formErrors.name}</div>
+        )}
       </div>
       <div className="email">
         <label htmlFor="email">Email</label>
@@ -111,10 +108,12 @@ const Signup: React.FC = () => {
           type="text"
           id="email"
           placeholder="Enter your email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          value={formData.email}
+          onChange={handleChange}
         />
-        {emailError && <div className="error-message">{emailError}</div>}
+        {formErrors.email && (
+          <div className="error-message">{formErrors.email}</div>
+        )}
       </div>
       <div className="password">
         <label htmlFor="password">Password</label>
@@ -122,10 +121,12 @@ const Signup: React.FC = () => {
           type="password"
           id="password"
           placeholder="Enter a password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          value={formData.password}
+          onChange={handleChange}
         />
-        {passwordError && <div className="error-message">{passwordError}</div>}
+        {formErrors.password && (
+          <div className="error-message">{formErrors.password}</div>
+        )}
       </div>
       <div className="confirm-password">
         <label htmlFor="confirmPassword">Confirm Password</label>
@@ -133,11 +134,11 @@ const Signup: React.FC = () => {
           type="password"
           id="confirmPassword"
           placeholder="Enter a password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
+          value={formData.confirmPassword}
+          onChange={handleChange}
         />
-        {confirmPasswordError && (
-          <div className="error-message">{confirmPasswordError}</div>
+        {formErrors.confirmPassword && (
+          <div className="error-message">{formErrors.confirmPassword}</div>
         )}
       </div>
       <div className="agree-checkbox">
@@ -146,12 +147,14 @@ const Signup: React.FC = () => {
             type="checkbox"
             id="agree"
             name="Agree"
-            checked={agree}
-            onChange={(e) => setAgree(e.target.checked)}
+            checked={formData.agree}
+            onChange={handleChange}
           />
           <label htmlFor="agree">I agree to the above information</label>
         </div>
-        {agreeError && <div className="error-message">{agreeError}</div>}
+        {formErrors.agree && (
+          <div className="error-message">{formErrors.agree}</div>
+        )}
       </div>
       <button className="signup-button" type="submit">
         Create Account

@@ -1,39 +1,27 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Grid, ThemeProvider, createTheme } from "@mui/material";
-import { collection, getDocs } from "firebase/firestore";
-import { db } from "../../firebase";
 import Sidebar from "./sidebar/Sidebar";
 import TaskList from "./task-list/TaskList";
 import TaskDetail from "./task-detail/TaskDetail";
 import { Task, Category } from "./types";
 import "./_homeScreen.scss";
+import Settings from "../setting_modal/Setting";
 
 const theme = createTheme();
 
 interface HomeScreenProps {
   onLogout: () => void;
+  userId: string; // Add userId prop
 }
 
-const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout }) => {
+const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout, userId }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [isTaskDetailVisible, setIsTaskDetailVisible] = useState(false);
-
-  useEffect(() => {
-    const fetchTasks = async () => {
-      const querySnapshot = await getDocs(collection(db, "tasks"));
-      const tasksData = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Task[];
-      setTasks(tasksData);
-    };
-
-    fetchTasks();
-  }, []);
+  const [isSettingsVisible, setIsSettingsVisible] = useState(false);
 
   const updateCategoryCounts = () => {
     const newCategories = categories.map((category) => ({
@@ -49,6 +37,15 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout }) => {
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  const handleSettingsClick = () => {
+    setIsSettingsVisible(true);
+    setIsTaskDetailVisible(false);
+  };
+
+  const handleCloseSettings = () => {
+    setIsSettingsVisible(false);
   };
 
   const addTask = (newTask: Task) => {
@@ -87,11 +84,13 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout }) => {
   const handleAddNewTask = () => {
     setSelectedTask(null);
     setIsTaskDetailVisible(true);
+    setIsSettingsVisible(false);
   };
 
   const handleEditTask = (task: Task) => {
     setSelectedTask(task);
     setIsTaskDetailVisible(true);
+    setIsSettingsVisible(false);
   };
 
   const handleCloseTaskDetail = () => {
@@ -113,6 +112,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout }) => {
               setSelectedCategory={setSelectedCategory}
               selectedCategory={selectedCategory}
               tasks={tasks}
+              onSettingsClick={handleSettingsClick}
             />
           </Grid>
           <Grid item xs={5}>
@@ -129,15 +129,20 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout }) => {
           </Grid>
           <Grid item xs={4}>
             {isTaskDetailVisible && (
-              <TaskDetail
-                selectedTask={selectedTask}
-                categories={categories}
-                updateTask={updateTask}
-                addTask={addTask}
-                setSelectedTask={setSelectedTask}
-                deleteTask={deleteTask}
-                closeTaskDetail={handleCloseTaskDetail}
-              />
+              <div className="task-detail-container">
+                <TaskDetail
+                  selectedTask={selectedTask}
+                  categories={categories}
+                  updateTask={updateTask}
+                  addTask={addTask}
+                  setSelectedTask={setSelectedTask}
+                  deleteTask={deleteTask}
+                  closeTaskDetail={handleCloseTaskDetail}
+                />
+              </div>
+            )}
+            {isSettingsVisible && (
+              <Settings userId={userId} closeSettings={handleCloseSettings} />
             )}
           </Grid>
         </Grid>
