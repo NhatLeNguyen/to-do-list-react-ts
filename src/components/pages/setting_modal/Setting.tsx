@@ -13,7 +13,6 @@ import CloseIcon from "@mui/icons-material/Close";
 import UserInfo from "./UserInfo";
 import "./_setting.scss";
 import ChangePassword from "./ChangePassword";
-
 interface SettingsProps {
   closeSettings: () => void;
   userId: string;
