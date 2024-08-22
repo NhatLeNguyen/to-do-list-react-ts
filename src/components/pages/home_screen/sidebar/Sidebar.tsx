@@ -73,6 +73,10 @@ const Sidebar = ({
     "#00bcd4",
   ];
 
+  const getTaskCountForCategory = (categoryId: string) => {
+    return tasks.filter((task) => task.list === categoryId).length;
+  };
+
   return (
     <div className={`sidebar ${isOpen ? "open" : "closed"}`}>
       <div className="sidebar-info">
@@ -173,8 +177,8 @@ const Sidebar = ({
               <ListItemText
                 className="list-item-text"
                 primary={category.name}
-                secondary={category.taskCount}
-              />{" "}
+                secondary={getTaskCountForCategory(category.id)}
+              />
               <IconButton
                 edge="end"
                 aria-label="delete"

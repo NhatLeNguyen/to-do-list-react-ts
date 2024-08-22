@@ -6,24 +6,20 @@
 //   Typography,
 //   IconButton,
 //   Snackbar,
+//   Link,
 // } from "@mui/material";
 // import EditIcon from "@mui/icons-material/Edit";
 // import SaveIcon from "@mui/icons-material/Save";
 
 // import { doc, getDoc, updateDoc } from "firebase/firestore";
 // import { db, auth } from "../../firebase";
-// import {
-//   verifyBeforeUpdateEmail,
-//   updateEmail,
-//   EmailAuthProvider,
-//   reauthenticateWithCredential,
-// } from "firebase/auth";
+// import { verifyBeforeUpdateEmail, updateEmail } from "firebase/auth";
 
 // const UserInfo = () => {
 //   const [user, setUser] = useState({ name: "", email: "" });
 //   const [editMode, setEditMode] = useState(false);
 //   const [, setEmailVerified] = useState(false);
-//   const [, setVerificationSent] = useState(false);
+//   const [verificationSent, setVerificationSent] = useState(false);
 //   const [snackbarOpen, setSnackbarOpen] = useState(false);
 //   const [snackbarMessage, setSnackbarMessage] = useState("");
 
@@ -50,44 +46,81 @@
 //     fetchUser();
 //   }, []);
 
-//   const handleEditClick = async () => {
-//     if (editMode) {
-//       try {
-//         const currentUser = auth.currentUser;
-//         if (!currentUser) {
-//           throw new Error("No user is currently logged in.");
-//         }
+//   // useEffect(() => {
+//   //   const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+//   //     if (currentUser) {
+//   //       currentUser.reload().then(() => {
+//   //         if (currentUser.emailVerified) {
+//   //           setEmailVerified(true);
+//   //           setSnackbarOpen(true);
+//   //         }
+//   //       });
+//   //     }
+//   //   });
 
-//         const userId = currentUser.uid;
-//         const userRef = doc(db, "users", userId);
-//         // Update user info in Firestore
-//         await updateDoc(userRef, { name: user.name, email: user.email });
-//         console.log("User information updated successfully in Firestore.");
-//         // Reauthenticate user before updating email
+//   //   return () => unsubscribe();
+//   // }, []);
 
-//         // Update email in Firebase Authentication and Firestore
-//         if (user.email !== currentUser.email) {
-//           await verifyBeforeUpdateEmail(currentUser, user.email);
-//           setSnackbarMessage(
-//             "Verification email sent to the new address. Please verify before updating."
-//           );
-//           setVerificationSent(true);
-//         } else {
-//           // Update email in Firebase Authentication
-//           await updateEmail(currentUser, user.email);
-//           console.log("Email updated successfully in Firebase Authentication.");
+//   const handleEditClick = () => {
+//     setEditMode(true);
+//   };
 
-//           setSnackbarMessage("User information updated successfully.");
-//         }
-
-//         setSnackbarOpen(true);
-//       } catch (error) {
-//         console.error("Error updating user data:", error);
-//         setSnackbarMessage("Error updating user data. Please try again.");
-//         setSnackbarOpen(true);
+//   const handleSaveClick = async () => {
+//     try {
+//       const currentUser = auth.currentUser;
+//       if (!currentUser) {
+//         throw new Error("No user is currently logged in.");
 //       }
+
+//       const userId = currentUser.uid;
+//       const userRef = doc(db, "users", userId);
+//       // Update user info in Firestore
+//       await updateDoc(userRef, { name: user.name, email: user.email });
+//       console.log("User information updated successfully in Firestore.");
+
+//       // Update email in Firebase Authentication and Firestore
+//       if (user.email !== currentUser.email) {
+//         await verifyBeforeUpdateEmail(currentUser, user.email);
+//         setSnackbarMessage(
+//           "Verification email sent to the new address. Please verify before updating."
+//         );
+//         setVerificationSent(true);
+//       } else {
+//         // Update email in Firebase Authentication
+//         await updateEmail(currentUser, user.email);
+//         console.log("Email updated successfully in Firebase Authentication.");
+
+//         setSnackbarMessage("User information updated successfully.");
+//       }
+
+//       setSnackbarOpen(true);
+//       setEditMode(false);
+//     } catch (error) {
+//       console.error("Error updating user data:", error);
+//       setSnackbarMessage("Error updating user data. Please try again.");
+//       setSnackbarOpen(true);
 //     }
-//     setEditMode(!editMode);
+//   };
+
+//   const handleResendVerification = async () => {
+//     try {
+//       const currentUser = auth.currentUser;
+//       if (!currentUser) {
+//         throw new Error("No user is currently logged in.");
+//       }
+
+//       await verifyBeforeUpdateEmail(currentUser, user.email);
+//       setSnackbarMessage(
+//         "Verification email resent. Please verify before updating."
+//       );
+//       setSnackbarOpen(true);
+//     } catch (error) {
+//       console.error("Error resending verification email:", error);
+//       setSnackbarMessage(
+//         "Error resending verification email. Please try again."
+//       );
+//       setSnackbarOpen(true);
+//     }
 //   };
 
 //   const handleSnackbarClose = () => {
@@ -113,7 +146,7 @@
 //             fullWidth
 //             margin="normal"
 //           />
-//           <Button variant="contained" color="primary" onClick={handleEditClick}>
+//           <Button variant="contained" color="primary" onClick={handleSaveClick}>
 //             <SaveIcon /> Save
 //           </Button>
 //         </>
@@ -127,6 +160,17 @@
 //         </>
 //       )}
 
+//       {verificationSent && (
+//         <Box>
+//           <Typography variant="body1" color="error">
+//             If you don't receive email. Click here!
+//           </Typography>
+//           <Link href="#" onClick={handleResendVerification}>
+//             Resend Verification Email
+//           </Link>
+//         </Box>
+//       )}
+
 //       <Snackbar
 //         open={snackbarOpen}
 //         autoHideDuration={6000}
@@ -136,7 +180,6 @@
 //     </Box>
 //   );
 // };
-
 // export default UserInfo;
 
 import { useState, useEffect } from "react";
@@ -147,31 +190,20 @@ import {
   Typography,
   IconButton,
   Snackbar,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
+  Link,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
 
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db, auth } from "../../firebase";
-import {
-  verifyBeforeUpdateEmail,
-  updateEmail,
-  reauthenticateWithCredential,
-  EmailAuthProvider,
-} from "firebase/auth";
+import { verifyBeforeUpdateEmail, onAuthStateChanged } from "firebase/auth";
 
 const UserInfo = () => {
   const [user, setUser] = useState({ name: "", email: "" });
   const [editMode, setEditMode] = useState(false);
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
-  const [, setEmailVerified] = useState(false);
-  const [, setVerificationSent] = useState(false);
+  const [emailVerified, setEmailVerified] = useState(false);
+  const [verificationSent, setVerificationSent] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
 
@@ -198,39 +230,43 @@ const UserInfo = () => {
     fetchUser();
   }, []);
 
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        await currentUser.reload();
+        if (currentUser.emailVerified) {
+          setEmailVerified(true);
+
+          // Update email in Firestore after verification
+          const userId = currentUser.uid;
+          const userRef = doc(db, "users", userId);
+          await updateDoc(userRef, { email: currentUser.email });
+          console.log("Email updated successfully in Firestore.");
+        }
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
   const handleEditClick = () => {
-    if (editMode) {
-      setPasswordDialogOpen(true);
-    } else {
-      setEditMode(true);
-    }
+    setEditMode(true);
   };
 
-  const handlePasswordDialogClose = () => {
-    setPasswordDialogOpen(false);
-  };
-
-  const handlePasswordSubmit = async () => {
+  const handleSaveClick = async () => {
     try {
       const currentUser = auth.currentUser;
       if (!currentUser) {
         throw new Error("No user is currently logged in.");
       }
 
-      // Reauthenticate user before updating email
-      const credential = EmailAuthProvider.credential(
-        currentUser.email!,
-        currentPassword
-      );
-      await reauthenticateWithCredential(currentUser, credential);
-
       const userId = currentUser.uid;
       const userRef = doc(db, "users", userId);
       // Update user info in Firestore
-      await updateDoc(userRef, { name: user.name, email: user.email });
+      await updateDoc(userRef, { name: user.name });
       console.log("User information updated successfully in Firestore.");
 
-      // Update email in Firebase Authentication and Firestore
+      // Update email in Firebase Authentication and send verification email
       if (user.email !== currentUser.email) {
         await verifyBeforeUpdateEmail(currentUser, user.email);
         setSnackbarMessage(
@@ -238,21 +274,36 @@ const UserInfo = () => {
         );
         setVerificationSent(true);
       } else {
-        // Update email in Firebase Authentication
-        await updateEmail(currentUser, user.email);
-        console.log("Email updated successfully in Firebase Authentication.");
-
         setSnackbarMessage("User information updated successfully.");
       }
 
       setSnackbarOpen(true);
-      setPasswordDialogOpen(false);
       setEditMode(false);
     } catch (error) {
       console.error("Error updating user data:", error);
       setSnackbarMessage("Error updating user data. Please try again.");
       setSnackbarOpen(true);
-      setPasswordDialogOpen(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    try {
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        throw new Error("No user is currently logged in.");
+      }
+
+      await verifyBeforeUpdateEmail(currentUser, user.email);
+      setSnackbarMessage(
+        "Verification email resent. Please verify before updating."
+      );
+      setSnackbarOpen(true);
+    } catch (error) {
+      console.error("Error resending verification email:", error);
+      setSnackbarMessage(
+        "Error resending verification email. Please try again."
+      );
+      setSnackbarOpen(true);
     }
   };
 
@@ -279,7 +330,7 @@ const UserInfo = () => {
             fullWidth
             margin="normal"
           />
-          <Button variant="contained" color="primary" onClick={handleEditClick}>
+          <Button variant="contained" color="primary" onClick={handleSaveClick}>
             <SaveIcon /> Save
           </Button>
         </>
@@ -293,31 +344,16 @@ const UserInfo = () => {
         </>
       )}
 
-      <Dialog open={passwordDialogOpen} onClose={handlePasswordDialogClose}>
-        <DialogTitle>Enter Password</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Please enter your current password to update your email.
-          </DialogContentText>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Password"
-            type="password"
-            fullWidth
-            value={currentPassword}
-            onChange={(e) => setCurrentPassword(e.target.value)}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handlePasswordDialogClose} color="primary">
-            Cancel
-          </Button>
-          <Button onClick={handlePasswordSubmit} color="primary">
-            Confirm
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {verificationSent && !emailVerified && (
+        <Box>
+          <Typography variant="body1" color="error">
+            If you don't receive email. Click here!
+          </Typography>
+          <Link href="#" onClick={handleResendVerification}>
+            Resend Verification Email
+          </Link>
+        </Box>
+      )}
 
       <Snackbar
         open={snackbarOpen}

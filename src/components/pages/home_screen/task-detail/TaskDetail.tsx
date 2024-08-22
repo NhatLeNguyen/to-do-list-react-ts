@@ -9,6 +9,8 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { Task, Category } from "../types";
+import { addDoc, collection } from "firebase/firestore";
+import { db, auth } from "../../../firebase";
 import "./_taskDetail.scss";
 
 interface TaskDetailProps {
@@ -50,13 +52,35 @@ const TaskDetail = ({
     setTask((prev) => (prev ? { ...prev, [name]: value } : null));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (task) {
       if (task.id) {
         updateTask(task);
       } else {
-        addTask(task);
+        const currentUser = auth.currentUser;
+        if (currentUser) {
+          try {
+            const taskData = {
+              userId: currentUser.uid,
+              title: task.title,
+              description: task.description,
+              dueDate: task.dueDate,
+              list: task.list,
+              completed: task.completed,
+            };
+            const docRef = await addDoc(collection(db, "tasks"), taskData);
+            console.log(
+              "Task added successfully to Firestore with ID: ",
+              docRef.id
+            );
+            addTask({ ...task, id: docRef.id });
+          } catch (error) {
+            console.error("Error adding task to Firestore:", error);
+          }
+        } else {
+          console.error("User is not authenticated");
+        }
       }
       setSelectedTask(task);
       setTask({

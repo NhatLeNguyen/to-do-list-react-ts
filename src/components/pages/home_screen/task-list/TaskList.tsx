@@ -13,7 +13,6 @@ import { Task, Category } from "../types";
 import "./_taskList.scss";
 
 interface TaskListProps {
-  tasks: Task[];
   categories: Category[];
   toggleTaskCompletion: (id: string) => void;
   deleteTask: (id: string) => void;
@@ -21,17 +20,23 @@ interface TaskListProps {
   addNewTask: () => void;
   selectedCategory: string | null;
   setSelectedCategory: (categoryId: string | null) => void;
+  tasks: Task[]; // Add tasks as props
 }
 
 const TaskList = ({
-  tasks,
   categories,
   toggleTaskCompletion,
   deleteTask,
   setSelectedTask,
   addNewTask,
   selectedCategory,
+  tasks, // Destructure tasks from props
 }: TaskListProps) => {
+  const getCategoryColor = (categoryId: string) => {
+    const category = categories.find((cat) => cat.id === categoryId);
+    return category ? category.color : "gray";
+  };
+
   const filteredTasks = selectedCategory
     ? tasks.filter((task) => task.list === selectedCategory)
     : tasks;
@@ -63,8 +68,7 @@ const TaskList = ({
             <div
               className="list-color-indicator"
               style={{
-                backgroundColor: categories.find((c) => c.id === task.list)
-                  ?.color,
+                backgroundColor: getCategoryColor(task.list),
               }}
             />
             <div className="task-actions">

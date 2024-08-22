@@ -6,12 +6,23 @@ import TaskDetail from "./task-detail/TaskDetail";
 import { Task, Category } from "./types";
 import "./_homeScreen.scss";
 import Settings from "../setting_modal/Setting";
+import { db, auth } from "../../firebase";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
+} from "firebase/firestore";
 
 const theme = createTheme();
 
 interface HomeScreenProps {
   onLogout: () => void;
-  userId: string; // Add userId prop
+  userId: string;
 }
 
 const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout, userId }) => {
@@ -32,6 +43,43 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout, userId }) => {
   };
 
   useEffect(() => {
+    const fetchTasksAndCategories = async () => {
+      try {
+        const currentUser = auth.currentUser;
+        if (currentUser) {
+          // Fetch tasks
+          const tasksQuery = query(
+            collection(db, "tasks"),
+            where("userId", "==", currentUser.uid)
+          );
+          const tasksSnapshot = await getDocs(tasksQuery);
+          const fetchedTasks: Task[] = [];
+          tasksSnapshot.forEach((doc) => {
+            fetchedTasks.push({ id: doc.id, ...doc.data() } as Task);
+          });
+          setTasks(fetchedTasks);
+
+          // Fetch categories
+          const categoriesQuery = query(
+            collection(db, "categories"),
+            where("userId", "==", currentUser.uid)
+          );
+          const categoriesSnapshot = await getDocs(categoriesQuery);
+          const fetchedCategories: Category[] = [];
+          categoriesSnapshot.forEach((doc) => {
+            fetchedCategories.push({ id: doc.id, ...doc.data() } as Category);
+          });
+          setCategories(fetchedCategories);
+        }
+      } catch (error) {
+        console.error("Error fetching tasks and categories: ", error);
+      }
+    };
+
+    fetchTasksAndCategories();
+  }, []);
+
+  useEffect(() => {
     updateCategoryCounts();
   }, [tasks]);
 
@@ -48,37 +96,88 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout, userId }) => {
     setIsSettingsVisible(false);
   };
 
-  const addTask = (newTask: Task) => {
-    setTasks([...tasks, { ...newTask, id: Date.now().toString() }]);
+  const addTask = async (newTask: Task) => {
+    try {
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        const taskData = {
+          userId: currentUser.uid,
+          title: newTask.title,
+          description: newTask.description,
+          dueDate: newTask.dueDate,
+          list: newTask.list,
+          completed: newTask.completed,
+        };
+        const docRef = await addDoc(collection(db, "tasks"), taskData);
+        setTasks([...tasks, { ...newTask, id: docRef.id }]);
+      }
+    } catch (error) {
+      console.error("Error adding task to Firestore:", error);
+    }
   };
 
-  const updateTask = (updatedTask: Task) => {
-    setTasks(
-      tasks.map((task) => (task.id === updatedTask.id ? updatedTask : task))
-    );
+  const updateTask = async (updatedTask: Task) => {
+    try {
+      const taskRef = doc(db, "tasks", updatedTask.id);
+      await updateDoc(taskRef, updatedTask);
+      setTasks(
+        tasks.map((task) => (task.id === updatedTask.id ? updatedTask : task))
+      );
+    } catch (error) {
+      console.error("Error updating task in Firestore:", error);
+    }
   };
 
-  const deleteTask = (id: string) => {
-    setTasks(tasks.filter((task) => task.id !== id));
+  const deleteTask = async (id: string) => {
+    try {
+      const taskRef = doc(db, "tasks", id);
+      await deleteDoc(taskRef);
+      setTasks(tasks.filter((task) => task.id !== id));
+    } catch (error) {
+      console.error("Error deleting task from Firestore:", error);
+    }
   };
 
-  const toggleTaskCompletion = (id: string) => {
-    setTasks(
-      tasks.map((task) =>
-        task.id === id ? { ...task, completed: !task.completed } : task
-      )
-    );
+  const toggleTaskCompletion = async (id: string) => {
+    try {
+      const task = tasks.find((task) => task.id === id);
+      if (task) {
+        const updatedTask = { ...task, completed: !task.completed };
+        await updateTask(updatedTask);
+      }
+    } catch (error) {
+      console.error("Error toggling task completion:", error);
+    }
   };
 
-  const addCategory = (name: string, color: string) => {
-    setCategories([
-      ...categories,
-      { id: Date.now().toString(), name, taskCount: 0, color },
-    ]);
+  const addCategory = async (name: string, color: string) => {
+    try {
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        const categoryData = {
+          userId: currentUser.uid,
+          name,
+          taskCount: 0,
+          color,
+        };
+        const docRef = await addDoc(collection(db, "categories"), categoryData);
+        setCategories([...categories, { ...categoryData, id: docRef.id }]);
+      }
+    } catch (error) {
+      console.error("Error adding category to Firestore:", error);
+    }
   };
 
-  const deleteCategory = (categoryId: string) => {
-    setCategories(categories.filter((category) => category.id !== categoryId));
+  const deleteCategory = async (categoryId: string) => {
+    try {
+      const categoryRef = doc(db, "categories", categoryId);
+      await deleteDoc(categoryRef);
+      setCategories(
+        categories.filter((category) => category.id !== categoryId)
+      );
+    } catch (error) {
+      console.error("Error deleting category from Firestore:", error);
+    }
   };
 
   const handleAddNewTask = () => {
@@ -117,7 +216,6 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout, userId }) => {
           </Grid>
           <Grid item xs={5}>
             <TaskList
-              tasks={tasks}
               categories={categories}
               toggleTaskCompletion={toggleTaskCompletion}
               deleteTask={deleteTask}
@@ -125,6 +223,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout, userId }) => {
               addNewTask={handleAddNewTask}
               selectedCategory={selectedCategory}
               setSelectedCategory={setSelectedCategory}
+              tasks={tasks}
             />
           </Grid>
           <Grid item xs={4}>
