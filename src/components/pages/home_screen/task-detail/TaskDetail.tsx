@@ -46,19 +46,9 @@ const TaskDetail = ({
     );
   }, [selectedTask]);
 
-  const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setTask((prev) => (prev ? { ...prev, [name]: value } : null));
-
-    if (task && task.id) {
-      try {
-        const taskRef = doc(db, "tasks", task.id);
-        await updateDoc(taskRef, { [name]: value });
-        updateTask({ ...task, [name]: value });
-      } catch (error) {
-        console.error("Error updating task in Firestore:", error);
-      }
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
