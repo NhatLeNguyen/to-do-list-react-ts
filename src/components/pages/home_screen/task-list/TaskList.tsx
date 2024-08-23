@@ -20,7 +20,7 @@ interface TaskListProps {
   addNewTask: () => void;
   selectedCategory: string | null;
   setSelectedCategory: (categoryId: string | null) => void;
-  tasks: Task[]; // Add tasks as props
+  tasks: Task[];
 }
 
 const TaskList = ({
@@ -30,7 +30,7 @@ const TaskList = ({
   setSelectedTask,
   addNewTask,
   selectedCategory,
-  tasks, // Destructure tasks from props
+  tasks,
 }: TaskListProps) => {
   const getCategoryColor = (categoryId: string) => {
     const category = categories.find((cat) => cat.id === categoryId);
@@ -61,7 +61,7 @@ const TaskList = ({
               onClick={(e) => e.stopPropagation()}
             />
             <ListItemText
-              className="task-title"
+              className={`task-title ${task.completed ? "completed-task" : ""}`}
               primary={task.title}
               secondary={task.dueDate}
             />

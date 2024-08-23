@@ -13,9 +13,9 @@ import {
   where,
   getDocs,
   addDoc,
-  updateDoc,
   deleteDoc,
   doc,
+  updateDoc,
 } from "firebase/firestore";
 
 const theme = createTheme();
@@ -27,12 +27,56 @@ interface HomeScreenProps {
 
 const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout, userId }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [tasks, setTasks] = useState<Task[]>(() => {
+    const savedTasks = localStorage.getItem("tasks");
+    return savedTasks ? JSON.parse(savedTasks) : [];
+  });
+  const [categories, setCategories] = useState<Category[]>(() => {
+    const savedCategories = localStorage.getItem("categories");
+    return savedCategories ? JSON.parse(savedCategories) : [];
+  });
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [isTaskDetailVisible, setIsTaskDetailVisible] = useState(false);
   const [isSettingsVisible, setIsSettingsVisible] = useState(false);
+
+  const fetchTasksAndCategories = async () => {
+    try {
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        // Fetch tasks
+        const tasksQuery = query(
+          collection(db, "tasks"),
+          where("userId", "==", currentUser.uid)
+        );
+        const tasksSnapshot = await getDocs(tasksQuery);
+        const fetchedTasks: Task[] = [];
+        tasksSnapshot.forEach((doc) => {
+          fetchedTasks.push({ id: doc.id, ...doc.data() } as Task);
+        });
+        setTasks(fetchedTasks);
+        localStorage.setItem("tasks", JSON.stringify(fetchedTasks));
+
+        // Fetch categories
+        const categoriesQuery = query(
+          collection(db, "categories"),
+          where("userId", "==", currentUser.uid)
+        );
+        const categoriesSnapshot = await getDocs(categoriesQuery);
+        const fetchedCategories: Category[] = [];
+        categoriesSnapshot.forEach((doc) => {
+          fetchedCategories.push({ id: doc.id, ...doc.data() } as Category);
+        });
+        setCategories(fetchedCategories);
+        localStorage.setItem("categories", JSON.stringify(fetchedCategories));
+      }
+    } catch (error) {
+      console.error("Error fetching tasks and categories: ", error);
+    }
+  };
+  useEffect(() => {
+    fetchTasksAndCategories();
+  }, []);
 
   const updateCategoryCounts = () => {
     const newCategories = categories.map((category) => ({
@@ -41,44 +85,6 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout, userId }) => {
     }));
     setCategories(newCategories);
   };
-
-  useEffect(() => {
-    const fetchTasksAndCategories = async () => {
-      try {
-        const currentUser = auth.currentUser;
-        if (currentUser) {
-          // Fetch tasks
-          const tasksQuery = query(
-            collection(db, "tasks"),
-            where("userId", "==", currentUser.uid)
-          );
-          const tasksSnapshot = await getDocs(tasksQuery);
-          const fetchedTasks: Task[] = [];
-          tasksSnapshot.forEach((doc) => {
-            fetchedTasks.push({ id: doc.id, ...doc.data() } as Task);
-          });
-          setTasks(fetchedTasks);
-
-          // Fetch categories
-          const categoriesQuery = query(
-            collection(db, "categories"),
-            where("userId", "==", currentUser.uid)
-          );
-          const categoriesSnapshot = await getDocs(categoriesQuery);
-          const fetchedCategories: Category[] = [];
-          categoriesSnapshot.forEach((doc) => {
-            fetchedCategories.push({ id: doc.id, ...doc.data() } as Category);
-          });
-          setCategories(fetchedCategories);
-        }
-      } catch (error) {
-        console.error("Error fetching tasks and categories: ", error);
-      }
-    };
-
-    fetchTasksAndCategories();
-  }, []);
-
   useEffect(() => {
     updateCategoryCounts();
   }, [tasks]);
@@ -95,44 +101,27 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout, userId }) => {
   const handleCloseSettings = () => {
     setIsSettingsVisible(false);
   };
-
-  const addTask = async (newTask: Task) => {
-    try {
-      const currentUser = auth.currentUser;
-      if (currentUser) {
-        const taskData = {
-          userId: currentUser.uid,
-          title: newTask.title,
-          description: newTask.description,
-          dueDate: newTask.dueDate,
-          list: newTask.list,
-          completed: newTask.completed,
-        };
-        const docRef = await addDoc(collection(db, "tasks"), taskData);
-        setTasks([...tasks, { ...newTask, id: docRef.id }]);
-      }
-    } catch (error) {
-      console.error("Error adding task to Firestore:", error);
-    }
+  const addTask = (newTask: Task) => {
+    const updatedTasks = [...tasks, { ...newTask, id: Date.now().toString() }];
+    setTasks(updatedTasks);
+    localStorage.setItem("tasks", JSON.stringify(updatedTasks));
   };
 
-  const updateTask = async (updatedTask: Task) => {
-    try {
-      const taskRef = doc(db, "tasks", updatedTask.id);
-      await updateDoc(taskRef, updatedTask);
-      setTasks(
-        tasks.map((task) => (task.id === updatedTask.id ? updatedTask : task))
-      );
-    } catch (error) {
-      console.error("Error updating task in Firestore:", error);
-    }
+  const updateTask = (updatedTask: Task) => {
+    const updatedTasks = tasks.map((task) =>
+      task.id === updatedTask.id ? updatedTask : task
+    );
+    setTasks(updatedTasks);
+    localStorage.setItem("tasks", JSON.stringify(updatedTasks));
   };
-
   const deleteTask = async (id: string) => {
     try {
       const taskRef = doc(db, "tasks", id);
       await deleteDoc(taskRef);
-      setTasks(tasks.filter((task) => task.id !== id));
+
+      const updatedTasks = tasks.filter((task) => task.id !== id);
+      setTasks(updatedTasks);
+      localStorage.setItem("tasks", JSON.stringify(updatedTasks));
     } catch (error) {
       console.error("Error deleting task from Firestore:", error);
     }
@@ -143,7 +132,9 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout, userId }) => {
       const task = tasks.find((task) => task.id === id);
       if (task) {
         const updatedTask = { ...task, completed: !task.completed };
-        await updateTask(updatedTask);
+        const taskRef = doc(db, "tasks", id);
+        await updateDoc(taskRef, { completed: updatedTask.completed });
+        updateTask(updatedTask);
       }
     } catch (error) {
       console.error("Error toggling task completion:", error);
@@ -161,7 +152,12 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout, userId }) => {
           color,
         };
         const docRef = await addDoc(collection(db, "categories"), categoryData);
-        setCategories([...categories, { ...categoryData, id: docRef.id }]);
+        const updatedCategories = [
+          ...categories,
+          { ...categoryData, id: docRef.id },
+        ];
+        setCategories(updatedCategories);
+        localStorage.setItem("categories", JSON.stringify(updatedCategories));
       }
     } catch (error) {
       console.error("Error adding category to Firestore:", error);
@@ -172,9 +168,11 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout, userId }) => {
     try {
       const categoryRef = doc(db, "categories", categoryId);
       await deleteDoc(categoryRef);
-      setCategories(
-        categories.filter((category) => category.id !== categoryId)
+      const updatedCategories = categories.filter(
+        (category) => category.id !== categoryId
       );
+      setCategories(updatedCategories);
+      localStorage.setItem("categories", JSON.stringify(updatedCategories));
     } catch (error) {
       console.error("Error deleting category from Firestore:", error);
     }

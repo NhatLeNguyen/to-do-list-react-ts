@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import { Task, Category } from "../types";
-import { addDoc, collection } from "firebase/firestore";
+import { addDoc, collection, doc, updateDoc } from "firebase/firestore";
 import { db, auth } from "../../../firebase";
 import "./_taskDetail.scss";
 
@@ -29,7 +29,6 @@ const TaskDetail = ({
   updateTask,
   addTask,
   setSelectedTask,
-  deleteTask,
   closeTaskDetail,
 }: TaskDetailProps) => {
   const [task, setTask] = useState<Task | null>(selectedTask);
@@ -47,16 +46,38 @@ const TaskDetail = ({
     );
   }, [selectedTask]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setTask((prev) => (prev ? { ...prev, [name]: value } : null));
+
+    if (task && task.id) {
+      try {
+        const taskRef = doc(db, "tasks", task.id);
+        await updateDoc(taskRef, { [name]: value });
+        updateTask({ ...task, [name]: value });
+      } catch (error) {
+        console.error("Error updating task in Firestore:", error);
+      }
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (task) {
       if (task.id) {
-        updateTask(task);
+        try {
+          const taskRef = doc(db, "tasks", task.id);
+          await updateDoc(taskRef, {
+            title: task.title,
+            description: task.description,
+            dueDate: task.dueDate,
+            list: task.list,
+            completed: task.completed,
+          });
+          updateTask(task);
+        } catch (error) {
+          console.error("Error updating task in Firestore:", error);
+        }
       } else {
         const currentUser = auth.currentUser;
         if (currentUser) {
@@ -91,14 +112,6 @@ const TaskDetail = ({
         list: "",
         completed: false,
       });
-      closeTaskDetail();
-    }
-  };
-
-  const handleDelete = () => {
-    if (task && task.id) {
-      deleteTask(task.id);
-      setSelectedTask(null);
       closeTaskDetail();
     }
   };
@@ -166,15 +179,6 @@ const TaskDetail = ({
         <Button className="submit-btn" type="submit" variant="contained">
           {task.id ? "Update" : "Add"}
         </Button>
-        {task.id && (
-          <Button
-            className="delete-btn"
-            variant="outlined"
-            onClick={handleDelete}
-          >
-            Delete
-          </Button>
-        )}
       </Box>
     </Box>
   );
