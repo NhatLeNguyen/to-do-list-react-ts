@@ -143,7 +143,7 @@ const TaskDetail = ({
         fullWidth
         label="Due Date"
         name="dueDate"
-        type="date"
+        type="datetime-local"
         value={task.dueDate}
         onChange={handleChange}
         margin="normal"

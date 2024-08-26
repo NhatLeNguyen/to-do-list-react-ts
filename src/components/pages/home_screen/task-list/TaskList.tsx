@@ -1,3 +1,4 @@
+import React from "react";
 import {
   List,
   ListItem,
@@ -10,6 +11,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import AddIcon from "@mui/icons-material/Add";
 import { Task, Category } from "../types";
+import { format, isValid } from "date-fns";
 import "./_taskList.scss";
 
 interface TaskListProps {
@@ -35,6 +37,14 @@ const TaskList = ({
   const getCategoryColor = (categoryId: string) => {
     const category = categories.find((cat) => cat.id === categoryId);
     return category ? category.color : "gray";
+  };
+
+  const formatDueDate = (dueDate: string) => {
+    const date = new Date(dueDate);
+    if (!isValid(date)) {
+      return "Invalid date";
+    }
+    return format(date, "HH:mm - dd/MM/yyyy");
   };
 
   const filteredTasks = selectedCategory
@@ -63,7 +73,7 @@ const TaskList = ({
             <ListItemText
               className={`task-title ${task.completed ? "completed-task" : ""}`}
               primary={task.title}
-              secondary={task.dueDate}
+              secondary={formatDueDate(task.dueDate)}
             />
             <div
               className="list-color-indicator"
