@@ -101,10 +101,23 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout, userId }) => {
   const handleCloseSettings = () => {
     setIsSettingsVisible(false);
   };
-  const addTask = (newTask: Task) => {
-    const updatedTasks = [...tasks, { ...newTask, id: Date.now().toString() }];
-    setTasks(updatedTasks);
-    localStorage.setItem("tasks", JSON.stringify(updatedTasks));
+  const addTask = async (newTask: Task) => {
+    try {
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        const taskData = {
+          ...newTask,
+          userId: currentUser.uid,
+          completed: false,
+        };
+        const docRef = await addDoc(collection(db, "tasks"), taskData);
+        const updatedTasks = [...tasks, { ...taskData, id: docRef.id }];
+        setTasks(updatedTasks);
+        localStorage.setItem("tasks", JSON.stringify(updatedTasks));
+      }
+    } catch (error) {
+      console.error("Error adding task to Firestore:", error);
+    }
   };
 
   const updateTask = (updatedTask: Task) => {
