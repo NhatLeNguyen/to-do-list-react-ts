@@ -50,7 +50,7 @@ const App: React.FC = () => {
           path="/home"
           element={
             isAuthenticated ? (
-              <HomeScreen onLogout={handleLogout} />
+              <HomeScreen onLogout={handleLogout} userId={""} />
             ) : (
               <Navigate to="/login" />
             )

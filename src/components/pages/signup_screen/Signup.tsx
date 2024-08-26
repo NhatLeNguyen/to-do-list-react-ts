@@ -3,13 +3,30 @@ import { useNavigate } from "react-router-dom";
 import { VALIDATIONS } from "../../constants";
 import "./_signup.scss";
 
-//firebase
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { db, auth } from "../../firebase";
 import { doc, setDoc } from "firebase/firestore";
 
+interface FormData {
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  agree: boolean;
+  [key: string]: string | boolean;
+}
+
+interface FormErrors {
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  agree: string;
+  [key: string]: string;
+}
+
 const Signup: React.FC = () => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     name: "",
     email: "",
     password: "",
@@ -17,7 +34,7 @@ const Signup: React.FC = () => {
     agree: false,
   });
 
-  const [formErrors, setFormErrors] = useState({
+  const [formErrors, setFormErrors] = useState<FormErrors>({
     name: "",
     email: "",
     password: "",
@@ -37,12 +54,17 @@ const Signup: React.FC = () => {
 
   const validateRegister = (): boolean => {
     let isValid = true;
-    const errors: Record<string, string> = {};
+    const errors: FormErrors = {
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+      agree: "",
+    };
 
     VALIDATIONS.forEach((field) => {
       if (field.id in formData) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const errorMessage = field.validate((formData as any)[field.id]);
+        const errorMessage = field.validate(formData[field.id].toString());
         if (errorMessage) {
           isValid = false;
           errors[field.id] = Array.isArray(errorMessage)
