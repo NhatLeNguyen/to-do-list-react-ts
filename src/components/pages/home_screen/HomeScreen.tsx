@@ -127,6 +127,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout, userId }) => {
     setTasks(updatedTasks);
     localStorage.setItem("tasks", JSON.stringify(updatedTasks));
   };
+
   const deleteTask = async (id: string) => {
     try {
       const taskRef = doc(db, "tasks", id);

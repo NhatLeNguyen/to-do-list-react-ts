@@ -1,11 +1,8 @@
+@import "../../mixin";
+@import "../../variables";
+
 .login-form {
-  font-family: "Montserrat";
-  max-width: 400px;
-  margin: 0 auto;
-  padding: 20px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  background-color: #f9f9f9;
+  @include form-container;
 
   .login-text {
     font-size: 24px;
@@ -23,31 +20,18 @@
     }
 
     input {
-      width: 95%;
-      padding: 8px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
+      @include form-input;
     }
 
     .error-message {
-      color: red;
+      color: $error-color;
       font-size: 12px;
       margin-top: 5px;
     }
   }
 
   .signin-button {
-    width: 100%;
-    padding: 10px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-
-    &:hover {
-      background-color: #0056b3;
-    }
+    @include button-style($primary-color, darken($primary-color, 10%));
   }
 
   .signup-route {
@@ -55,7 +39,7 @@
     text-align: center;
 
     a {
-      color: #007bff;
+      color: $primary-color;
       text-decoration: none;
 
       &:hover {
@@ -63,6 +47,7 @@
       }
     }
   }
+
   .register-route {
     display: flex;
     align-items: center;
