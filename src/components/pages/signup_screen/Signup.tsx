@@ -6,79 +6,59 @@ import "./_signup.scss";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { db, auth } from "../../firebase";
 import { doc, setDoc } from "firebase/firestore";
-import { FormData, FormErrors } from "../../interfaces";
 
 const Signup: React.FC = () => {
-  const [formData, setFormData] = useState<FormData>({
-    name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    agree: false,
-  });
-
-  const [formErrors, setFormErrors] = useState<FormErrors>({
-    name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    agree: "",
-  });
-
   const navigate = useNavigate();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { id, value, checked, type } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [id]: type === "checkbox" ? checked : value,
-    }));
-  };
-
-  const validateRegister = (): boolean => {
+  const validateRegister = (formData: FormData): boolean => {
     let isValid = true;
-    const errors: FormErrors = {
-      name: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-      agree: "",
-    };
 
     VALIDATIONS.forEach((field) => {
-      if (field.id in formData) {
-        const errorMessage = field.validate(formData[field.id].toString());
-        if (errorMessage) {
-          isValid = false;
-          errors[field.id] = Array.isArray(errorMessage)
+      const value = formData.get(field.id)?.toString() || "";
+      const errorMessage = field.validate(value);
+
+      const errorElement = document.getElementById(`${field.id}Error`);
+      if (errorMessage) {
+        isValid = false;
+        if (errorElement) {
+          errorElement.textContent = Array.isArray(errorMessage)
             ? errorMessage.join(", ")
             : errorMessage;
-        } else {
-          errors[field.id] = "";
+        }
+      } else {
+        if (errorElement) {
+          errorElement.textContent = "";
         }
       }
     });
 
-    setFormErrors(errors);
     return isValid;
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (validateRegister()) {
+    const formData = new FormData(event.currentTarget);
+
+    if (validateRegister(formData)) {
+      setIsSubmitting(true);
       try {
+        const email = formData.get("email") as string;
+        const password = formData.get("password") as string;
+        const name = formData.get("name") as string;
+
         const userCredential = await createUserWithEmailAndPassword(
           auth,
-          formData.email,
-          formData.password
+          email,
+          password
         );
-        const user = userCredential.user;
+        const { user } = userCredential;
 
         // Save user information to Firestore
         await setDoc(doc(db, "users", user.uid), {
-          name: formData.name,
-          email: formData.email,
-          password: formData.password,
+          name,
+          email,
+          password,
           createdAt: new Date(),
         });
 
@@ -86,6 +66,8 @@ const Signup: React.FC = () => {
         navigate("/login");
       } catch (error) {
         alert(error);
+      } finally {
+        setIsSubmitting(false);
       }
     }
   };
@@ -99,70 +81,50 @@ const Signup: React.FC = () => {
         <input
           type="text"
           id="name"
+          name="name"
           placeholder="Enter your name"
-          value={formData.name}
-          onChange={handleChange}
         />
-        {formErrors.name && (
-          <div className="error-message">{formErrors.name}</div>
-        )}
+        <div id="nameError" className="error-message"></div>
       </div>
       <div className="email">
         <label htmlFor="email">Email</label>
         <input
           type="text"
           id="email"
+          name="email"
           placeholder="Enter your email"
-          value={formData.email}
-          onChange={handleChange}
         />
-        {formErrors.email && (
-          <div className="error-message">{formErrors.email}</div>
-        )}
+        <div id="emailError" className="error-message"></div>
       </div>
       <div className="password">
         <label htmlFor="password">Password</label>
         <input
           type="password"
           id="password"
+          name="password"
           placeholder="Enter a password"
-          value={formData.password}
-          onChange={handleChange}
         />
-        {formErrors.password && (
-          <div className="error-message">{formErrors.password}</div>
-        )}
+        <div id="passwordError" className="error-message"></div>
       </div>
       <div className="confirm-password">
         <label htmlFor="confirmPassword">Confirm Password</label>
         <input
           type="password"
           id="confirmPassword"
+          name="confirmPassword"
           placeholder="Enter a password"
-          value={formData.confirmPassword}
-          onChange={handleChange}
         />
-        {formErrors.confirmPassword && (
-          <div className="error-message">{formErrors.confirmPassword}</div>
-        )}
+        <div id="confirmPasswordError" className="error-message"></div>
       </div>
       <div className="agree-checkbox">
         <div className="agree-content">
-          <input
-            type="checkbox"
-            id="agree"
-            name="Agree"
-            checked={formData.agree}
-            onChange={handleChange}
-          />
+          <input type="checkbox" id="agree" name="agree" />
           <label htmlFor="agree">I agree to the above information</label>
         </div>
-        {formErrors.agree && (
-          <div className="error-message">{formErrors.agree}</div>
-        )}
+        <div id="agreeError" className="error-message"></div>
       </div>
-      <button className="signup-button" type="submit">
-        Create Account
+      <button className="signup-button" type="submit" disabled={isSubmitting}>
+        {isSubmitting ? "Creating Account..." : "Create Account"}
       </button>
       <div className="login-route">
         <p>You have an account?</p>

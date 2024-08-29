@@ -58,24 +58,6 @@ export interface LoginProps {
   onLogin: (token: string) => void;
 }
 
-//register
-export interface FormData {
-  name: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-  agree: boolean;
-  [key: string]: string | boolean;
-}
-export interface FormErrors {
-  name: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-  agree: string;
-  [key: string]: string;
-}
-
 //validate
 export interface ValidationRule {
   validate: (value: string) => boolean;

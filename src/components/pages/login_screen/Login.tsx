@@ -7,13 +7,10 @@ import "./_login.scss";
 import { LoginProps } from "../../interfaces";
 
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [emailError, setEmailError] = useState<string>("");
-  const [passwordError, setPasswordError] = useState<string>("");
   const navigate = useNavigate();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const validateLogin = (): boolean => {
+  const validateLogin = (formData: FormData): boolean => {
     let isValid = true;
 
     const loginValidations = VALIDATIONS.filter(
@@ -21,21 +18,18 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     );
 
     loginValidations.forEach((field) => {
-      const value = field.id === "email" ? email : password;
+      const value = formData.get(field.id)?.toString() || "";
       const errorMessage = field.validate(value);
 
+      const errorElement = document.getElementById(`${field.id}Error`);
       if (errorMessage !== "") {
         isValid = false;
-        if (field.id === "email") {
-          setEmailError(errorMessage as string);
-        } else {
-          setPasswordError(errorMessage as string);
+        if (errorElement) {
+          errorElement.textContent = errorMessage as string;
         }
       } else {
-        if (field.id === "email") {
-          setEmailError("");
-        } else {
-          setPasswordError("");
+        if (errorElement) {
+          errorElement.textContent = "";
         }
       }
     });
@@ -45,8 +39,14 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (validateLogin()) {
+    const formData = new FormData(event.currentTarget);
+
+    if (validateLogin(formData)) {
+      setIsSubmitting(true);
       try {
+        const email = formData.get("email") as string;
+        const password = formData.get("password") as string;
+
         const userCredential = await signInWithEmailAndPassword(
           auth,
           email,
@@ -63,6 +63,8 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         } else {
           alert("An unknown error occurred.");
         }
+      } finally {
+        setIsSubmitting(false);
       }
     }
   };
@@ -76,11 +78,10 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         <input
           type="text"
           id="email"
+          name="email"
           placeholder="Enter your email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
         />
-        {emailError && <div className="error-message">{emailError}</div>}
+        <div id="emailError" className="error-message"></div>
       </div>
       <div className="password">
         <div className="password-text">
@@ -89,14 +90,13 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         <input
           type="password"
           id="password"
+          name="password"
           placeholder="Enter a password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
         />
-        {passwordError && <div className="error-message">{passwordError}</div>}
+        <div id="passwordError" className="error-message"></div>
       </div>
-      <button className="signin-button" type="submit">
-        Sign in
+      <button className="signin-button" type="submit" disabled={isSubmitting}>
+        {isSubmitting ? "Signing in..." : "Sign in"}
       </button>
       <div className="register-route">
         <p>Don't have an account? </p>
