@@ -1,9 +1,6 @@
-export const EMAIL_VALIDATION = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+import { Validation, ValidationRule } from "./interfaces";
 
-interface ValidationRule {
-  validate: (value: string) => boolean;
-  message: string;
-}
+export const EMAIL_VALIDATION = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const VALIDATION_RULES: Record<string, ValidationRule> = {
   UPPERCASE: {
@@ -35,11 +32,6 @@ export const ERROR_MESSAGE = {
   CONFIRM_PASSWORD: "Passwords do not match.",
   AGREE: "Please agree to the above information.",
 };
-
-interface Validation {
-  id: string;
-  validate: (value: string) => string | string[];
-}
 
 export const VALIDATIONS: Validation[] = [
   {

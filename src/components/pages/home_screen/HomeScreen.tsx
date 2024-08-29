@@ -3,7 +3,7 @@ import { Grid, ThemeProvider, createTheme } from "@mui/material";
 import Sidebar from "./sidebar/Sidebar";
 import TaskList from "./task-list/TaskList";
 import TaskDetail from "./task-detail/TaskDetail";
-import { Task, Category } from "./types";
+import { Task, Category } from "../../types";
 import "./_homeScreen.scss";
 import Settings from "../setting_modal/Setting";
 import { db, auth } from "../../firebase";
@@ -17,13 +17,9 @@ import {
   doc,
   updateDoc,
 } from "firebase/firestore";
+import { HomeScreenProps } from "../../interfaces";
 
 const theme = createTheme();
-
-interface HomeScreenProps {
-  onLogout: () => void;
-  userId: string;
-}
 
 const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout, userId }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -42,7 +38,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout, userId }) => {
 
   const fetchTasksAndCategories = async () => {
     try {
-      const currentUser = auth.currentUser;
+      const { currentUser } = auth;
       if (currentUser) {
         // Fetch tasks
         const tasksQuery = query(
@@ -50,10 +46,14 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout, userId }) => {
           where("userId", "==", currentUser.uid)
         );
         const tasksSnapshot = await getDocs(tasksQuery);
-        const fetchedTasks: Task[] = [];
-        tasksSnapshot.forEach((doc) => {
-          fetchedTasks.push({ id: doc.id, ...doc.data() } as Task);
-        });
+        const fetchedTasks: Task[] = tasksSnapshot.docs.reduce(
+          (acc: Task[], doc) => {
+            acc.push({ id: doc.id, ...doc.data() } as Task);
+            return acc;
+          },
+          []
+        );
+
         setTasks(fetchedTasks);
         localStorage.setItem("tasks", JSON.stringify(fetchedTasks));
 
@@ -63,10 +63,13 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout, userId }) => {
           where("userId", "==", currentUser.uid)
         );
         const categoriesSnapshot = await getDocs(categoriesQuery);
-        const fetchedCategories: Category[] = [];
-        categoriesSnapshot.forEach((doc) => {
-          fetchedCategories.push({ id: doc.id, ...doc.data() } as Category);
-        });
+        const fetchedCategories: Category[] = categoriesSnapshot.docs.reduce(
+          (acc: Category[], doc) => {
+            acc.push({ id: doc.id, ...doc.data() } as Category);
+            return acc;
+          },
+          []
+        );
         setCategories(fetchedCategories);
         localStorage.setItem("categories", JSON.stringify(fetchedCategories));
       }
@@ -101,25 +104,14 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onLogout, userId }) => {
   const handleCloseSettings = () => {
     setIsSettingsVisible(false);
   };
-  const addTask = async (newTask: Task) => {
-    try {
-      const currentUser = auth.currentUser;
-      if (currentUser) {
-        const taskData = {
-          ...newTask,
-          userId: currentUser.uid,
-          completed: false,
-        };
-        const docRef = await addDoc(collection(db, "tasks"), taskData);
-        const updatedTasks = [...tasks, { ...taskData, id: docRef.id }];
-        setTasks(updatedTasks);
-        localStorage.setItem("tasks", JSON.stringify(updatedTasks));
-      }
-    } catch (error) {
-      console.error("Error adding task to Firestore:", error);
-    }
-  };
 
+  const addTask = (newTask: Task) => {
+    setTasks((prevTasks) => {
+      const updatedTasks = [...prevTasks, newTask];
+      localStorage.setItem("tasks", JSON.stringify(updatedTasks));
+      return updatedTasks;
+    });
+  };
   const updateTask = (updatedTask: Task) => {
     const updatedTasks = tasks.map((task) =>
       task.id === updatedTask.id ? updatedTask : task

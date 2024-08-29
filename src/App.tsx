@@ -1,20 +1,13 @@
 import React, { useState, useEffect } from "react";
-import {
-  BrowserRouter as Router,
-  Route,
-  Routes,
-  Navigate,
-} from "react-router-dom";
-import Login from "./components/pages/login_screen/Login";
-import Signup from "./components/pages/signup_screen/Signup";
-import HomeScreen from "./components/pages/home_screen/HomeScreen";
+import { BrowserRouter as Router } from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./components/firebase";
+import AppRoutes from "./routes/AppRoutes";
 
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     const token = sessionStorage.getItem("authToken");
-    return token ? true : false;
+    return !!token;
   });
 
   useEffect(() => {
@@ -36,31 +29,18 @@ const App: React.FC = () => {
   };
 
   const handleLogout = () => {
-    sessionStorage.removeItem("authToken");
     auth.signOut();
+    sessionStorage.removeItem("authToken");
     setIsAuthenticated(false);
   };
 
   return (
     <Router>
-      <Routes>
-        <Route path="/login" element={<Login onLogin={handleLogin} />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route
-          path="/home"
-          element={
-            isAuthenticated ? (
-              <HomeScreen onLogout={handleLogout} userId={""} />
-            ) : (
-              <Navigate to="/login" />
-            )
-          }
-        />
-        <Route
-          path="*"
-          element={<Navigate to={isAuthenticated ? "/home" : "/login"} />}
-        />
-      </Routes>
+      <AppRoutes
+        isAuthenticated={isAuthenticated}
+        handleLogin={handleLogin}
+        handleLogout={handleLogout}
+      />
     </Router>
   );
 };

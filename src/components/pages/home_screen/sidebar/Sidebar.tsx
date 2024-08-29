@@ -11,7 +11,7 @@ import {
   InputAdornment,
   IconButton,
 } from "@mui/material";
-import { Category, Task } from "../types";
+
 import UpcomingIcon from "@mui/icons-material/Upcoming";
 import TodayIcon from "@mui/icons-material/Today";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
@@ -22,21 +22,8 @@ import MenuIcon from "@mui/icons-material/Menu";
 import SettingsIcon from "@mui/icons-material/Settings";
 import LogoutIcon from "@mui/icons-material/Logout";
 import DeleteIcon from "@mui/icons-material/Delete";
-
+import { SidebarProps } from "../../../interfaces";
 import "./_sideBar.scss";
-
-interface SidebarProps {
-  categories: Category[];
-  addCategory: (name: string, color: string) => void;
-  deleteCategory: (categoryId: string) => void;
-  isOpen: boolean;
-  toggleSidebar: () => void;
-  onLogout: () => void;
-  setSelectedCategory: (categoryId: string | null) => void;
-  selectedCategory: string | null;
-  tasks: Task[];
-  onSettingsClick: () => void;
-}
 
 const Sidebar = ({
   categories,
@@ -50,16 +37,19 @@ const Sidebar = ({
   tasks,
   onSettingsClick,
 }: SidebarProps) => {
+  const defaultColor = "#1976d2";
   const [newListName, setNewListName] = useState("");
-  const [selectedColor, setSelectedColor] = useState("#1976d2");
+  const [selectedColor, setSelectedColor] = useState(defaultColor);
   const [isAddingNewList, setIsAddingNewList] = useState(false);
 
   const handleAddCategory = () => {
-    if (newListName) {
-      addCategory(newListName, selectedColor);
-      setNewListName("");
-      setIsAddingNewList(false);
+    if (!newListName) {
+      return;
     }
+
+    addCategory(newListName, selectedColor);
+    setNewListName("");
+    setIsAddingNewList(false);
   };
 
   const colors = [

@@ -6,24 +6,7 @@ import "./_signup.scss";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { db, auth } from "../../firebase";
 import { doc, setDoc } from "firebase/firestore";
-
-interface FormData {
-  name: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-  agree: boolean;
-  [key: string]: string | boolean;
-}
-
-interface FormErrors {
-  name: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-  agree: string;
-  [key: string]: string;
-}
+import { FormData, FormErrors } from "../../interfaces";
 
 const Signup: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({

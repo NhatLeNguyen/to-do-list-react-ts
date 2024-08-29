@@ -23,7 +23,7 @@ const ChangePassword = () => {
     }
 
     try {
-      const currentUser = auth.currentUser;
+      const { currentUser } = auth;
       if (!currentUser) {
         throw new Error("No user is currently logged in.");
       }

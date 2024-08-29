@@ -9,20 +9,9 @@ import {
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import AddIcon from "@mui/icons-material/Add";
-import { Task, Category } from "../types";
 import { format, isValid } from "date-fns";
 import "./_taskList.scss";
-
-interface TaskListProps {
-  categories: Category[];
-  toggleTaskCompletion: (id: string) => void;
-  deleteTask: (id: string) => void;
-  setSelectedTask: (task: Task) => void;
-  addNewTask: () => void;
-  selectedCategory: string | null;
-  setSelectedCategory: (categoryId: string | null) => void;
-  tasks: Task[];
-}
+import { TaskListProps } from "../../../interfaces";
 
 const TaskList = ({
   categories,

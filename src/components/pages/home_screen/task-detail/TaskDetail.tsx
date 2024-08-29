@@ -8,21 +8,20 @@ import {
   IconButton,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import { Task, Category } from "../types";
+import { Task } from "../../../types";
 import { addDoc, collection, doc, updateDoc } from "firebase/firestore";
 import { db, auth } from "../../../firebase";
 import "./_taskDetail.scss";
+import { TaskDetailProps } from "../../../interfaces";
 
-interface TaskDetailProps {
-  selectedTask: Task | null;
-  categories: Category[];
-  updateTask: (task: Task) => void;
-  addTask: (task: Task) => void;
-  setSelectedTask: (task: Task | null) => void;
-  deleteTask: (id: string) => void;
-  closeTaskDetail: () => void;
-}
-
+const initDefaultTask = {
+  id: "",
+  title: "",
+  description: "",
+  dueDate: "",
+  list: "",
+  completed: false,
+};
 const TaskDetail = ({
   selectedTask,
   categories,
@@ -34,16 +33,7 @@ const TaskDetail = ({
   const [task, setTask] = useState<Task | null>(selectedTask);
 
   useEffect(() => {
-    setTask(
-      selectedTask || {
-        id: "",
-        title: "",
-        description: "",
-        dueDate: "",
-        list: "",
-        completed: false,
-      }
-    );
+    setTask(selectedTask || initDefaultTask);
   }, [selectedTask]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -69,7 +59,7 @@ const TaskDetail = ({
           console.error("Error updating task in Firestore:", error);
         }
       } else {
-        const currentUser = auth.currentUser;
+        const { currentUser } = auth;
         if (currentUser) {
           try {
             const taskData = {
@@ -94,14 +84,7 @@ const TaskDetail = ({
         }
       }
       setSelectedTask(task);
-      setTask({
-        id: "",
-        title: "",
-        description: "",
-        dueDate: "",
-        list: "",
-        completed: false,
-      });
+      setTask(initDefaultTask);
       closeTaskDetail();
     }
   };
@@ -109,7 +92,7 @@ const TaskDetail = ({
   if (!task) return null;
 
   return (
-    <Box component="form" onSubmit={handleSubmit} className="task-detail">
+    <form onSubmit={handleSubmit} className="task-detail">
       <Box className="task-detail-header">
         <Typography className="task-detail-title" variant="h6">
           Task
@@ -170,7 +153,7 @@ const TaskDetail = ({
           {task.id ? "Update" : "Add"}
         </Button>
       </Box>
-    </Box>
+    </form>
   );
 };
 

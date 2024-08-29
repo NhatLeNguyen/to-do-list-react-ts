@@ -4,10 +4,7 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../firebase";
 import { VALIDATIONS } from "../../constants";
 import "./_login.scss";
-
-interface LoginProps {
-  onLogin: (token: string) => void;
-}
+import { LoginProps } from "../../interfaces";
 
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [email, setEmail] = useState<string>("");
