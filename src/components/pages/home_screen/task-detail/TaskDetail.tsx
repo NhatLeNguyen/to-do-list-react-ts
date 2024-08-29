@@ -8,11 +8,11 @@ import {
   IconButton,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import { Task } from "../../../types";
+import { Task } from "@/components/types";
 import { addDoc, collection, doc, updateDoc } from "firebase/firestore";
-import { db, auth } from "../../../firebase";
+import { db, auth } from "@/components/firebase";
 import "./_taskDetail.scss";
-import { TaskDetailProps } from "../../../interfaces";
+import { TaskDetailProps } from "@/components/interfaces";
 
 const initDefaultTask = {
   id: "",

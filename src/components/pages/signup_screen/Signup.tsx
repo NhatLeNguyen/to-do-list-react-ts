@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { VALIDATIONS } from "../../constants";
+import { VALIDATIONS } from "@/components/constants";
 import "./_signup.scss";
-
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { db, auth } from "../../firebase";
+import { db, auth } from "@components/firebase";
 import { doc, setDoc } from "firebase/firestore";
 
 const Signup: React.FC = () => {

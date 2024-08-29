@@ -22,7 +22,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import SettingsIcon from "@mui/icons-material/Settings";
 import LogoutIcon from "@mui/icons-material/Logout";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { SidebarProps } from "../../../interfaces";
+import { SidebarProps } from "@/components/interfaces";
 import "./_sideBar.scss";
 
 const Sidebar = ({

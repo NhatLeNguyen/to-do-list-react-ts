@@ -12,7 +12,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
 
 import { doc, getDoc, updateDoc } from "firebase/firestore";
-import { db, auth } from "../../firebase";
+import { db, auth } from "@components/firebase";
 import { verifyBeforeUpdateEmail, onAuthStateChanged } from "firebase/auth";
 
 const UserInfo = () => {

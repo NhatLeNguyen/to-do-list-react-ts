@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../../firebase";
-import { VALIDATIONS } from "../../constants";
+import { auth } from "@components/firebase";
+import { VALIDATIONS } from "@components/constants";
 import "./_login.scss";
-import { LoginProps } from "../../interfaces";
+import { LoginProps } from "@components/interfaces";
 
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const navigate = useNavigate();

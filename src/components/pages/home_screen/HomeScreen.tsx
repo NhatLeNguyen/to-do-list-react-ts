@@ -3,10 +3,10 @@ import { Grid, ThemeProvider, createTheme } from "@mui/material";
 import Sidebar from "./sidebar/Sidebar";
 import TaskList from "./task-list/TaskList";
 import TaskDetail from "./task-detail/TaskDetail";
-import { Task, Category } from "../../types";
+import { Task, Category } from "@components/types";
 import "./_homeScreen.scss";
 import Settings from "../setting_modal/Setting";
-import { db, auth } from "../../firebase";
+import { db, auth } from "@components/firebase";
 import {
   collection,
   query,

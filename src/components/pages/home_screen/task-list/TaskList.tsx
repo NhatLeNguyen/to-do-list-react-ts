@@ -11,7 +11,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import AddIcon from "@mui/icons-material/Add";
 import { format, isValid } from "date-fns";
 import "./_taskList.scss";
-import { TaskListProps } from "../../../interfaces";
+import { TaskListProps } from "@/components/interfaces";
 
 const TaskList = ({
   categories,

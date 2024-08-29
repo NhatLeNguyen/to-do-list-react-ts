@@ -13,7 +13,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import UserInfo from "./UserInfo";
 import "./_setting.scss";
 import ChangePassword from "./ChangePassword";
-import { SettingsProps } from "../../interfaces";
+import { SettingsProps } from "@components/interfaces";
 
 const Settings = ({ closeSettings }: SettingsProps) => {
   const [selectedSetting, setSelectedSetting] = useState<string | null>(null);

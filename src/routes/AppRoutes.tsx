@@ -1,9 +1,9 @@
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-import Login from "../components/pages/login_screen/Login";
-import Signup from "../components/pages/signup_screen/Signup";
-import HomeScreen from "../components/pages/home_screen/HomeScreen";
-import { AppRoutesProps } from "../components/interfaces";
+import Login from "@/components/pages/login_screen/Login";
+import Signup from "@components/pages/signup_screen/Signup";
+import HomeScreen from "@components/pages/home_screen/HomeScreen";
+import { AppRoutesProps } from "@components/interfaces";
 
 const AppRoutes: React.FC<AppRoutesProps> = ({
   isAuthenticated,

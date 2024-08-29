@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Box, TextField, Button, Typography, Snackbar } from "@mui/material";
 import { doc, updateDoc } from "firebase/firestore";
-import { db, auth } from "../../firebase";
+import { db, auth } from "@components/firebase";
 import {
   updatePassword,
   reauthenticateWithCredential,
