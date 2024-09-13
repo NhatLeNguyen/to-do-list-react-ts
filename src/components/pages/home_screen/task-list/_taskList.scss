@@ -1,0 +1,34 @@
+@import "../../../variables";
+
+.task-list {
+  .task-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: solid 2px $background-color;
+    .task-checkbox {
+      margin-right: 8px;
+    }
+
+    .task-title {
+      flex-grow: 1;
+    }
+
+    .task-actions {
+      display: flex;
+    }
+  }
+
+  .add-task-btn {
+    margin-top: 16px;
+  }
+  .list-color-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 10px;
+  }
+  .completed-task {
+    text-decoration: line-through;
+  }
+}

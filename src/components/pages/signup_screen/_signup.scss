@@ -1,0 +1,55 @@
+@import "../../mixin";
+@import "../../variables";
+
+.register-form {
+  @include form-container;
+
+  .register-text {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+
+  .name,
+  .email,
+  .password,
+  .confirm-password,
+  .agree-checkbox {
+    margin-bottom: 15px;
+
+    input[type="text"],
+    input[type="password"] {
+      @include form-input;
+    }
+
+    .error-message {
+      color: $error-color;
+      font-size: 12px;
+      margin-top: 5px;
+    }
+  }
+
+  .signup-button {
+    @include button-style($secondary-color, darken($secondary-color, 10%));
+  }
+
+  .login-route {
+    text-align: center;
+    display: flex;
+    align-items: center;
+
+    a {
+      color: $primary-color;
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  .agree-content {
+    display: flex;
+    align-items: center;
+  }
+}

@@ -1,0 +1,81 @@
+@import "../../variables";
+
+.settings-container {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  height: 100vh;
+  position: relative;
+  padding: 16px;
+  background-color: $background-color;
+  border-radius: 8px;
+  box-shadow: $box-shadow;
+  animation: slide-in 0.3s ease-out;
+
+  .settings-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    .setting-title {
+      font-size: 24px;
+      font-weight: bold;
+    }
+  }
+
+  .close-icon {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+  }
+
+  .setting-list {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+
+    .MuiList-root {
+      padding: 0;
+    }
+
+    .MuiListItem-root {
+      padding: 16px 20px;
+    }
+
+    .MuiListItemText-primary {
+      font-size: 16px;
+    }
+
+    .MuiListItemText-root h6 {
+      font-size: 18px;
+      font-weight: bold;
+      color: $text-color;
+    }
+
+    .MuiDivider-root {
+      margin: 8px 0;
+    }
+
+    .MuiListItem-button {
+      &:hover {
+        background-color: $background-color;
+      }
+    }
+
+    .MuiSvgIcon-root {
+      color: $icon-color;
+      font-size: 18px;
+    }
+  }
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
